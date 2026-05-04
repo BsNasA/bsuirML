@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>CSA — загрузка датасета</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <h1>CSA — система комплексного статистического анализа</h1>
+
+    <form method="post" enctype="multipart/form-data" class="card">
+        <h2>Загрузка CSV и регрессионный анализ</h2>
+
+        <label>Выберите CSV-файл</label>
+        <input type="file" name="dataset_file" accept=".csv" required>
+
+        <label>Целевая переменная</label>
+        <input type="text" name="target_column" value="salary" required>
+
+        <label>Признаки через запятую</label>
+        <input type="text" name="feature_columns" value="age,experience" required>
+
+        <label>Метод регрессии</label>
+        <select name="method">
+            <option value="linear">linear</option>
+            <option value="ridge">ridge</option>
+            <option value="lasso">lasso</option>
+            <option value="logistic">logistic</option>
+        </select>
+
+        <button type="submit">Загрузить датасет и запустить анализ</button>
+    </form>
+
+    {% if uploaded_dataset_id %}
+        <div class="card">
+            <h3>Загруженный датасет</h3>
+            <code>{{ uploaded_dataset_id }}</code>
+        </div>
+    {% endif %}
+
+    {% if error %}
+        <div class="error">
+            <h3>Ошибка</h3>
+            <p>{{ error }}</p>
+        </div>
+    {% endif %}
+
+    {% if result %}
+        <div class="card">
+            <h2>Результаты анализа</h2>
+
+            <h3>Интерпретация</h3>
+            <pre>{{ result.interpretation }}</pre>
+
+            <h3>Метрики</h3>
+            <pre>{{ result.metrics }}</pre>
+
+            <h3>Коэффициенты</h3>
+            <pre>{{ result.coefficients }}</pre>
+
+            <h3>Важность признаков</h3>
+            <pre>{{ result.feature_importance }}</pre>
+
+            <h3>Result ID</h3>
+            <code>{{ result.result_id }}</code>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

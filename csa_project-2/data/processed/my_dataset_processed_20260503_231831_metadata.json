@@ -1,0 +1,53 @@
+{
+  "processed_id": "my_dataset_processed_20260503_231831",
+  "original_id": "my_dataset",
+  "created_at": "20260503_231831",
+  "rows": 10,
+  "columns": 3,
+  "size_bytes": 2466,
+  "transformations": [
+    {
+      "operation": "handle_missing",
+      "parameters": {
+        "strategy": "fill_mean"
+      },
+      "statistics": {
+        "strategy": "fill_mean",
+        "missing_before": 0,
+        "missing_after": 0,
+        "rows_before": 10,
+        "rows_after": 10
+      }
+    },
+    {
+      "operation": "normalize",
+      "parameters": {
+        "method": "standard",
+        "columns": [
+          "age",
+          "experience"
+        ]
+      },
+      "statistics": {
+        "method": "standard",
+        "columns": [
+          {
+            "column": "age",
+            "mean": 39.0,
+            "std": 13.157169570660367
+          },
+          {
+            "column": "experience",
+            "mean": 12.0,
+            "std": 10.110500592068734
+          }
+        ]
+      }
+    }
+  ],
+  "column_types": {
+    "age": "float64",
+    "experience": "float64",
+    "salary": "int64"
+  }
+}

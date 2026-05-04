@@ -1,0 +1,9 @@
+pandas
+numpy
+pydantic
+pydantic-settings
+scikit-learn
+scipy
+statsmodels
+pyarrow
+openpyxl

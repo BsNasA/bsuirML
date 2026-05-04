@@ -1,0 +1,120 @@
+{
+  "method": "linear",
+  "method_name": "Множественная линейная регрессия",
+  "target_variable": "salary",
+  "feature_columns": [
+    "age",
+    "experience"
+  ],
+  "n_features": 2,
+  "n_samples": 10,
+  "train_samples": 8,
+  "test_samples": 2,
+  "model_info": {
+    "model_type": "linear",
+    "features": [
+      "age",
+      "experience"
+    ]
+  },
+  "coefficients": {
+    "age": 25011.478659118413,
+    "experience": 16956.19030806522
+  },
+  "intercept": 90250.0,
+  "feature_importance": [
+    {
+      "feature": "age",
+      "importance": 25011.478659118413
+    },
+    {
+      "feature": "experience",
+      "importance": 16956.19030806522
+    }
+  ],
+  "metrics": {
+    "train_r2": 0.9998471202079077,
+    "test_r2": 0.9998650769112184,
+    "train_rmse": 517.1222498891477,
+    "test_rmse": 627.2445511019157,
+    "train_mae": 379.0170359594522,
+    "test_mae": 449.9320725681682,
+    "cv_mean_r2": 0.9994925977725492,
+    "cv_std_r2": 0.00031387219735505686
+  },
+  "diagnostics": {
+    "normality": {
+      "test": "Shapiro-Wilk",
+      "statistic": 0.9472992096122387,
+      "p_value": 0.6839844152572785,
+      "is_normal": true,
+      "interpretation": "Нормальные"
+    },
+    "homoscedasticity": {
+      "correlation_with_fitted": -0.7232243006533345,
+      "p_value": 0.04261188432204946,
+      "is_homoscedastic": false,
+      "interpretation": "Гетероскедастичность"
+    },
+    "autocorrelation": {
+      "durbin_watson": 2.194831289317318,
+      "has_autocorrelation": false,
+      "interpretation": "Нет автокорреляции"
+    },
+    "multicollinearity": {
+      "vif_values": [
+        {
+          "feature": "age",
+          "vif": 34.54978239176689
+        },
+        {
+          "feature": "experience",
+          "vif": 34.54978239176689
+        }
+      ],
+      "max_vif": 34.54978239176689,
+      "has_multicollinearity": true,
+      "severity": "критическая"
+    },
+    "influential_points": {
+      "influential_count": 0,
+      "influential_percentage": 0.0,
+      "max_cooks_distance": 0.45327886489916774
+    },
+    "overall_assessment": {
+      "quality": "requires_attention",
+      "issues": [
+        "homoscedasticity",
+        "multicollinearity"
+      ]
+    }
+  },
+  "predictions": {
+    "train": [
+      89852.47724731597,
+      34622.64207653561,
+      129942.2256152542,
+      53032.58713346239,
+      170031.9739831924,
+      75451.507027183,
+      59169.23548577132,
+      109897.35143128509
+    ],
+    "test": [
+      149987.0997992233,
+      42886.96394435964
+    ]
+  },
+  "parameters": {
+    "target_column": "salary",
+    "feature_columns": [
+      "age",
+      "experience"
+    ],
+    "method": "linear",
+    "test_size": 0.2,
+    "cv_folds": 3
+  },
+  "dataset_id": "my_dataset",
+  "interpretation": "Регрессионный анализ: Множественная линейная регрессия\nЦелевая переменная: salary\nКоличество признаков: 2\nR² на тестовой выборке: 1.000 (отличное качество)\nRMSE на тестовой выборке: 627.245\n\nНаиболее важные признаки:\n  • age: 25011.479\n  • experience: 16956.190"
+}
