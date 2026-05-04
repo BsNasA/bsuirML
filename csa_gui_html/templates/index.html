@@ -14,29 +14,41 @@
         <h2>Загрузка CSV и регрессионный анализ</h2>
 
         <label>Выберите файл данных (CSV, XLSX или DOCX)</label>
-        <input type="file" name="dataset_file" accept=".csv,.xlsx,.docx" required>
+        <div class="file-picker">
+            <input id="dataset_file" class="file-input" type="file" name="dataset_file" accept=".csv,.xlsx,.docx" required>
+            <label for="dataset_file" class="file-input-button">Выбрать файл</label>
+            <span id="selected-file-name" class="file-name">Файл не выбран</span>
+        </div>
+        <p class="file-help">После отправки браузер очищает поле файла. Последняя загрузка отображается ниже.</p>
 
         <label>Целевая переменная</label>
-        <input type="text" name="target_column" value="salary" required>
+        <input type="text" name="target_column" value="{{ target_column_value }}" required>
 
         <label>Признаки через запятую</label>
-        <input type="text" name="feature_columns" value="age,experience" required>
+        <input type="text" name="feature_columns" value="{{ feature_columns_value }}" required>
 
         <label>Метод регрессии</label>
-        <select name="method">
-            <option value="linear">linear</option>
-            <option value="ridge">ridge</option>
-            <option value="lasso">lasso</option>
-            <option value="logistic">logistic</option>
+        <select id="method" name="method">
+            <option value="linear" {% if method_value == "linear" %}selected{% endif %}>linear</option>
+            <option value="ridge" {% if method_value == "ridge" %}selected{% endif %}>ridge</option>
+            <option value="lasso" {% if method_value == "lasso" %}selected{% endif %}>lasso</option>
+            <option value="logistic" {% if method_value == "logistic" %}selected{% endif %}>logistic</option>
         </select>
+        <p id="method-hint" class="method-help"></p>
 
         <button type="submit">Загрузить датасет и запустить анализ</button>
     </form>
 
     {% if uploaded_dataset_id %}
         <div class="card">
-            <h3>Загруженный датасет</h3>
-            <code>{{ uploaded_dataset_id }}</code>
+            <h3>Последняя загрузка</h3>
+            <p><strong>Dataset ID:</strong> <code>{{ uploaded_dataset_id }}</code></p>
+            {% if uploaded_filename %}
+                <p><strong>Файл:</strong> {{ uploaded_filename }}</p>
+            {% endif %}
+            {% if saved_path %}
+                <p><strong>Путь:</strong> <code>{{ saved_path }}</code></p>
+            {% endif %}
         </div>
     {% endif %}
 
@@ -52,22 +64,257 @@
             <h2>Результаты анализа</h2>
 
             <h3>Интерпретация</h3>
-            <pre>{{ result.interpretation }}</pre>
+            <div class="result-text">
+                {% for line in result.interpretation.split('\n') %}
+                    {% if line.strip() %}
+                        <p>{{ line }}</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <h3>Общая информация</h3>
+            <table class="result-table">
+                <tbody>
+                    <tr>
+                        <th>Метод</th>
+                        <td>{{ result.method_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Целевая переменная</th>
+                        <td>{{ result.target_variable }}</td>
+                    </tr>
+                    <tr>
+                        <th>Признаки</th>
+                        <td>{{ result.feature_columns | join(', ') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Размер выборки</th>
+                        <td>{{ result.n_samples }} (train: {{ result.train_samples }}, test: {{ result.test_samples }})</td>
+                    </tr>
+                </tbody>
+            </table>
 
             <h3>Метрики</h3>
-            <pre>{{ result.metrics }}</pre>
+            {% set metric_labels = {
+                'train_r2': 'R² (обучение)',
+                'test_r2': 'R² (тест)',
+                'train_rmse': 'RMSE (обучение)',
+                'test_rmse': 'RMSE (тест)',
+                'train_mae': 'MAE (обучение)',
+                'test_mae': 'MAE (тест)',
+                'cv_mean_r2': 'Средний R² (кросс-валидация)',
+                'cv_std_r2': 'Стд. отклонение R² (кросс-валидация)',
+                'train_accuracy': 'Accuracy (обучение)',
+                'test_accuracy': 'Accuracy (тест)',
+                'train_precision': 'Precision (обучение)',
+                'test_precision': 'Precision (тест)',
+                'train_recall': 'Recall (обучение)',
+                'test_recall': 'Recall (тест)',
+                'train_f1': 'F1 (обучение)',
+                'test_f1': 'F1 (тест)',
+                'roc_auc': 'ROC-AUC'
+            } %}
+            <table class="result-table">
+                <thead>
+                    <tr>
+                        <th>Метрика</th>
+                        <th>Значение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in result.metrics.items() %}
+                        <tr>
+                            <td>{{ metric_labels.get(key, key) }}</td>
+                            <td>
+                                {% if value is none %}
+                                    —
+                                {% elif value is number %}
+                                    {{ "%.6f"|format(value) }}
+                                {% else %}
+                                    {{ value }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
             <h3>Коэффициенты</h3>
-            <pre>{{ result.coefficients }}</pre>
+            <table class="result-table">
+                <thead>
+                    <tr>
+                        <th>Признак</th>
+                        <th>Коэффициент</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for feature, coef in result.coefficients.items() %}
+                        <tr>
+                            <td>{{ feature }}</td>
+                            <td>{{ "%.6f"|format(coef) }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td><strong>Свободный член (intercept)</strong></td>
+                        <td><strong>{{ "%.6f"|format(result.intercept) }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
 
             <h3>Важность признаков</h3>
-            <pre>{{ result.feature_importance }}</pre>
+            <table class="result-table">
+                <thead>
+                    <tr>
+                        <th>Признак</th>
+                        <th>Важность</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in result.feature_importance %}
+                        <tr>
+                            <td>{{ item.feature }}</td>
+                            <td>{{ "%.6f"|format(item.importance) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if result.diagnostics %}
+                <h3>Диагностика</h3>
+                {% set overall = result.diagnostics.get('overall_assessment', {}) %}
+                {% set metrics = result.metrics %}
+                {% set quality_labels = {
+                    'good': 'хорошо',
+                    'requires_attention': 'требует внимания'
+                } %}
+                {% set issue_labels = {
+                    'normality': 'ненормальность остатков',
+                    'homoscedasticity': 'гетероскедастичность',
+                    'autocorrelation': 'автокорреляция',
+                    'multicollinearity': 'мультиколлинеарность'
+                } %}
+                <div class="result-text">
+                    <p><strong>Краткое резюме по прогону:</strong></p>
+                    {% if metrics.get('test_r2') is number %}
+                        {% set test_r2 = metrics.get('test_r2') %}
+                        {% set train_r2 = metrics.get('train_r2', test_r2) %}
+                        {% set r2_gap = (train_r2 - test_r2) | abs %}
+                        {% set cv_std = metrics.get('cv_std_r2') %}
+                        {% if test_r2 >= 0.85 %}
+                            {% set quality_word = "высокое" %}
+                        {% elif test_r2 >= 0.65 %}
+                            {% set quality_word = "хорошее" %}
+                        {% elif test_r2 >= 0.45 %}
+                            {% set quality_word = "среднее" %}
+                        {% else %}
+                            {% set quality_word = "низкое" %}
+                        {% endif %}
+                        <p>
+                            Качество прогноза {{ quality_word }}: R² (тест) = {{ "%.3f"|format(test_r2) }},
+                            RMSE = {{ "%.2f"|format(metrics.get('test_rmse', 0)) }},
+                            MAE = {{ "%.2f"|format(metrics.get('test_mae', 0)) }}.
+                        </p>
+                        <p>
+                            Больше всего на оценку повлияли:
+                            {% if test_r2 >= 0.85 %}
+                                сильный R² на тесте;
+                            {% elif test_r2 >= 0.65 %}
+                                хороший R² на тесте;
+                            {% else %}
+                                умеренный/низкий R² на тесте;
+                            {% endif %}
+                            {% if r2_gap <= 0.03 %}
+                                небольшой разрыв train/test ({{ "%.3f"|format(r2_gap) }});
+                            {% else %}
+                                заметный разрыв train/test ({{ "%.3f"|format(r2_gap) }});
+                            {% endif %}
+                            {% if cv_std is number %}
+                                {% if cv_std <= 0.03 %}
+                                    стабильность по кросс-валидации хорошая (σ={{ "%.3f"|format(cv_std) }}).
+                                {% else %}
+                                    стабильность по кросс-валидации умеренная (σ={{ "%.3f"|format(cv_std) }}).
+                                {% endif %}
+                            {% else %}
+                                кросс-валидация не определила стабильность.
+                            {% endif %}
+                        </p>
+                    {% elif metrics.get('test_accuracy') is number %}
+                        {% set test_acc = metrics.get('test_accuracy') %}
+                        {% set train_acc = metrics.get('train_accuracy', test_acc) %}
+                        {% set acc_gap = (train_acc - test_acc) | abs %}
+                        <p>
+                            Качество классификации: accuracy (тест) = {{ "%.3f"|format(test_acc) }},
+                            F1 (тест) = {{ "%.3f"|format(metrics.get('test_f1', 0)) }}.
+                        </p>
+                        <p>
+                            Больше всего на оценку повлияли:
+                            {% if test_acc >= 0.85 %}
+                                высокая точность на тесте;
+                            {% elif test_acc >= 0.7 %}
+                                приемлемая точность на тесте;
+                            {% else %}
+                                невысокая точность на тесте;
+                            {% endif %}
+                            {% if acc_gap <= 0.05 %}
+                                небольшой разрыв train/test ({{ "%.3f"|format(acc_gap) }}).
+                            {% else %}
+                                заметный разрыв train/test ({{ "%.3f"|format(acc_gap) }}).
+                            {% endif %}
+                        </p>
+                    {% else %}
+                        <p>Ключевые метрики рассчитаны, но итоговая интерпретация ограничена форматом задачи.</p>
+                    {% endif %}
+                    <p><strong>Общая оценка:</strong> {{ quality_labels.get(overall.get('quality'), overall.get('quality', '—')) }}</p>
+                    {% if overall.get('issues') %}
+                        <p>
+                            <strong>Замечания:</strong>
+                            {% for issue in overall.get('issues') %}
+                                {{ issue_labels.get(issue, issue) }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </p>
+                    {% else %}
+                        <p><strong>Замечания:</strong> не обнаружены</p>
+                    {% endif %}
+                </div>
+            {% endif %}
 
             <h3>Result ID</h3>
             <code>{{ result.result_id }}</code>
         </div>
     {% endif %}
 </div>
+
+<script>
+    const fileInput = document.getElementById("dataset_file");
+    const fileNameView = document.getElementById("selected-file-name");
+    const methodSelect = document.getElementById("method");
+    const methodHint = document.getElementById("method-hint");
+
+    const methodHints = {
+        linear: "Для salary, price, sales обычно используйте linear.",
+        ridge: "Ridge полезен, когда признаки сильно коррелируют и нужно стабилизировать модель.",
+        lasso: "Lasso подходит, когда признаков много: он может занулять менее важные признаки.",
+        logistic: "Для 0/1 или категориальных классов используйте logistic."
+    };
+
+    fileInput.addEventListener("change", () => {
+        if (fileInput.files && fileInput.files.length > 0) {
+            fileNameView.textContent = fileInput.files[0].name;
+            fileNameView.classList.add("file-name-selected");
+        } else {
+            fileNameView.textContent = "Файл не выбран";
+            fileNameView.classList.remove("file-name-selected");
+        }
+    });
+
+    function updateMethodHint() {
+        const method = methodSelect.value;
+        methodHint.textContent = methodHints[method] || "";
+    }
+
+    methodSelect.addEventListener("change", updateMethodHint);
+    updateMethodHint();
+</script>
 
 </body>
 </html>

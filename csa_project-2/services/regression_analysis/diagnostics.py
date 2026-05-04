@@ -121,7 +121,11 @@ class RegressionDiagnostics:
 
         vif_data = []
         for i in range(X.shape[1]):
-            vif = variance_inflation_factor(X, i)
+            try:
+                vif = variance_inflation_factor(X, i)
+            except Exception:
+                # На вырожденных матрицах/константных колонках VIF может не вычислиться.
+                vif = np.inf
             vif_data.append({
                 'feature': feature_names[i],
                 'vif': float(vif)
@@ -155,9 +159,16 @@ class RegressionDiagnostics:
         if n <= p + 1:
             return {'warning': 'Insufficient data for influential points analysis'}
 
-        # Расчет Cook's distance (упрощенно)
-        h = np.diag(X @ np.linalg.inv(X.T @ X) @ X.T)
-        cooks = (residuals**2 / (p * np.var(residuals))) * (h / (1 - h)**2)
+        var_resid = np.var(residuals)
+        if not np.isfinite(var_resid) or var_resid <= 1e-12:
+            return {'warning': 'Residual variance is too small for stable Cook`s distance'}
+
+        # Используем псевдообратную матрицу, чтобы избежать падений на сингулярных X^T X.
+        xtx_pinv = np.linalg.pinv(X.T @ X)
+        h = np.diag(X @ xtx_pinv @ X.T)
+        h = np.clip(h, 0.0, 0.999999)
+        cooks = (residuals**2 / (p * var_resid)) * (h / (1 - h)**2)
+        cooks = np.nan_to_num(cooks, nan=0.0, posinf=0.0, neginf=0.0)
 
         influential = np.sum(cooks > 4/(n-p-1))
 

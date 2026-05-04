@@ -40,7 +40,11 @@ def index():
     result = None
     error = None
     uploaded_dataset_id = None
+    uploaded_filename = None
     saved_path = None
+    target_column_value = "salary"
+    feature_columns_value = "age,experience"
+    method_value = "linear"
 
     if request.method == "POST":
         try:
@@ -60,11 +64,15 @@ def index():
             file.save(save_path)
 
             uploaded_dataset_id = dataset_id
+            uploaded_filename = filename
             saved_path = str(save_path)
 
             target_column = request.form.get("target_column")
             feature_columns_raw = request.form.get("feature_columns")
             method = request.form.get("method")
+            target_column_value = target_column or ""
+            feature_columns_value = feature_columns_raw or ""
+            method_value = method or "linear"
 
             if not target_column:
                 raise ValueError("Не указана целевая переменная")
@@ -99,7 +107,11 @@ def index():
         result=result,
         error=error,
         uploaded_dataset_id=uploaded_dataset_id,
-        saved_path=saved_path
+        uploaded_filename=uploaded_filename,
+        saved_path=saved_path,
+        target_column_value=target_column_value,
+        feature_columns_value=feature_columns_value,
+        method_value=method_value
     )
 
 

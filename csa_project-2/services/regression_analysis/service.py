@@ -168,7 +168,7 @@ class RegressionAnalysisService(LoggerMixin):
             'test_samples': len(y_test),
             'model_info': model_info,
             'coefficients': self._get_coefficients(model, feature_cols, method),
-            'intercept': float(model.intercept_) if hasattr(model, 'intercept_') else 0,
+            'intercept': self._get_intercept(model),
             'feature_importance': feature_importance,
             'metrics': metrics,
             'diagnostics': diagnostics,
@@ -268,6 +268,22 @@ class RegressionAnalysisService(LoggerMixin):
         return {
             col: float(coef[i]) for i, col in enumerate(feature_cols)
         }
+
+    def _get_intercept(self, model) -> float:
+        """Безопасное извлечение intercept для скалярного и векторного случая."""
+        if not hasattr(model, 'intercept_'):
+            return 0.0
+
+        intercept = np.array(model.intercept_)
+        if intercept.ndim == 0:
+            return float(intercept)
+
+        # Для многоклассовой логистики intercept векторный. Берем первый класс,
+        # чтобы структура результата оставалась совместимой с текущим UI.
+        if intercept.size > 0:
+            return float(intercept.flat[0])
+
+        return 0.0
 
     def _get_feature_importance(self, model, feature_cols: List[str],
                                method: str) -> List[Dict[str, Any]]:
