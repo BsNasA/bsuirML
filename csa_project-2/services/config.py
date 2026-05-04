@@ -52,9 +52,18 @@ class ServicesConfig(BaseSettings):
     RESULTS_DB_URL: str = Field("sqlite:///./results.db", env="CSA_RESULTS_DB")
 
     # Настройки файлового хранилища
-    DATA_STORAGE_PATH: str = Field("./data", env="CSA_DATA_PATH")
-    RESULTS_STORAGE_PATH: str = Field("./results", env="CSA_RESULTS_PATH")
-    REPORTS_STORAGE_PATH: str = Field("./reports", env="CSA_REPORTS_PATH")
+    DATA_STORAGE_PATH: str = Field(
+        default_factory=lambda: os.getenv("CSA_DATA_PATH", "./data"),
+        env="CSA_DATA_PATH"
+    )
+    RESULTS_STORAGE_PATH: str = Field(
+        default_factory=lambda: os.getenv("CSA_RESULTS_PATH", "./results"),
+        env="CSA_RESULTS_PATH"
+    )
+    REPORTS_STORAGE_PATH: str = Field(
+        default_factory=lambda: os.getenv("CSA_REPORTS_PATH", "./reports"),
+        env="CSA_REPORTS_PATH"
+    )
 
     # Настройки визуализации
     PLOT_BACKEND: str = Field("plotly", env="CSA_PLOT_BACKEND")  # matplotlib, plotly, bokeh

@@ -26,6 +26,8 @@ sys.path.insert(0, str(CSA_PROJECT_PATH))
 
 from services.regression_analysis.service import RegressionAnalysisService
 
+ALLOWED_EXTENSIONS = {".csv", ".xlsx", ".docx"}
+
 app = Flask(
     __name__,
     template_folder=str(GUI_PATH / "templates"),
@@ -48,9 +50,10 @@ def index():
                 raise ValueError("Файл датасета не выбран")
 
             filename = secure_filename(file.filename)
+            extension = Path(filename).suffix.lower()
 
-            if not filename.lower().endswith(".csv"):
-                raise ValueError("Поддерживается только CSV-файл")
+            if extension not in ALLOWED_EXTENSIONS:
+                raise ValueError("Поддерживаются только файлы CSV, XLSX и DOCX")
 
             dataset_id = Path(filename).stem
             save_path = CSA_DATA_PATH / filename

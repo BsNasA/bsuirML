@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+.venv1/
+csa_gui_html/venv/
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
+
+# Flask / logs
+*.log
+instance/
+
+# Data/results if не хочешь заливать пользовательские файлы
+csa_gui_html/data/
+csa_gui_html/results/
+csa_gui_html/reports/
+csa_project-2/data/
+csa_project-2/results/
+csa_project-2/reports/

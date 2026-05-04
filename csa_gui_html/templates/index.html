@@ -13,8 +13,8 @@
     <form method="post" enctype="multipart/form-data" class="card">
         <h2>Загрузка CSV и регрессионный анализ</h2>
 
-        <label>Выберите CSV-файл</label>
-        <input type="file" name="dataset_file" accept=".csv" required>
+        <label>Выберите файл данных (CSV, XLSX или DOCX)</label>
+        <input type="file" name="dataset_file" accept=".csv,.xlsx,.docx" required>
 
         <label>Целевая переменная</label>
         <input type="text" name="target_column" value="salary" required>
