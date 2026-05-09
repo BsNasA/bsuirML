@@ -34,7 +34,9 @@ class ServicesConfig(BaseSettings):
 
     # Настройки Celery
     CELERY_BROKER_URL: str = Field("redis://localhost:6379/0", env="CSA_CELERY_BROKER")
-    CELERY_RESULT_BACKEND: str = Field("redis://localhost:6379/0", env="CSA_CELERY_BACKEND")
+    CELERY_RESULT_BACKEND: str = Field(
+        "redis://localhost:6379/0", env="CSA_CELERY_BACKEND"
+    )
     CELERY_TASK_ALWAYS_EAGER: bool = Field(False, env="CSA_CELERY_EAGER")
 
     # Настройки Redis
@@ -51,22 +53,32 @@ class ServicesConfig(BaseSettings):
     # Настройки базы данных результатов
     RESULTS_DB_URL: str = Field("sqlite:///./results.db", env="CSA_RESULTS_DB")
 
-    # Настройки файлового хранилища
+    # ==========================================
+    # НАСТРОЙКИ ФАЙЛОВОГО ХРАНИЛИЩА (ОБЪЕДИНЕННЫЕ)
+    # ==========================================
     DATA_STORAGE_PATH: str = Field(
-        default_factory=lambda: os.getenv("CSA_DATA_PATH", "./data"),
-        env="CSA_DATA_PATH"
+        default_factory=lambda: os.getenv("CSA_DATA_PATH", "data/storage"),
+        env="CSA_DATA_PATH",
     )
     RESULTS_STORAGE_PATH: str = Field(
-        default_factory=lambda: os.getenv("CSA_RESULTS_PATH", "./results"),
-        env="CSA_RESULTS_PATH"
+        default_factory=lambda: os.getenv("CSA_RESULTS_PATH", "data/results"),
+        env="CSA_RESULTS_PATH",
     )
     REPORTS_STORAGE_PATH: str = Field(
-        default_factory=lambda: os.getenv("CSA_REPORTS_PATH", "./reports"),
-        env="CSA_REPORTS_PATH"
+        default_factory=lambda: os.getenv("CSA_REPORTS_PATH", "data/reports"),
+        env="CSA_REPORTS_PATH",
     )
+    # Добавлен путь для сохранения графиков визуализации
+    IMAGE_STORAGE_PATH: str = Field(
+        default_factory=lambda: os.getenv("CSA_IMAGES_PATH", "data/reports/images"),
+        env="CSA_IMAGES_PATH",
+    )
+    # ==========================================
 
     # Настройки визуализации
-    PLOT_BACKEND: str = Field("plotly", env="CSA_PLOT_BACKEND")  # matplotlib, plotly, bokeh
+    PLOT_BACKEND: str = Field(
+        "plotly", env="CSA_PLOT_BACKEND"
+    )  # matplotlib, plotly, bokeh
     PLOT_DPI: int = Field(300, env="CSA_PLOT_DPI")
     PLOT_DEFAULT_WIDTH: int = Field(1200, env="CSA_PLOT_WIDTH")
     PLOT_DEFAULT_HEIGHT: int = Field(800, env="CSA_PLOT_HEIGHT")
@@ -88,23 +100,54 @@ class ServicesConfig(BaseSettings):
             "name": "Производство",
             "icon": "🏭",
             "default_metrics": ["oee", "downtime", "quality_rate", "throughput"],
-            "visualization_templates": ["production_line", "equipment_status", "quality_control"],
-            "report_sections": ["overview", "equipment", "quality", "costs"]
+            "visualization_templates": [
+                "production_line",
+                "equipment_status",
+                "quality_control",
+            ],
+            "report_sections": ["overview", "equipment", "quality", "costs"],
         },
         "education": {
             "name": "Образование",
             "icon": "🎓",
-            "default_metrics": ["grades", "attendance_rate", "engagement_score", "retention"],
-            "visualization_templates": ["learning_progress", "class_performance", "student_engagement"],
-            "report_sections": ["overview", "performance", "attendance", "recommendations"]
+            "default_metrics": [
+                "grades",
+                "attendance_rate",
+                "engagement_score",
+                "retention",
+            ],
+            "visualization_templates": [
+                "learning_progress",
+                "class_performance",
+                "student_engagement",
+            ],
+            "report_sections": [
+                "overview",
+                "performance",
+                "attendance",
+                "recommendations",
+            ],
         },
         "e_medicine": {
             "name": "Электронная медицина",
             "icon": "🏥",
-            "default_metrics": ["diagnosis_accuracy", "treatment_efficacy", "patient_satisfaction"],
-            "visualization_templates": ["patient_timeline", "health_indicators", "treatment_outcomes"],
-            "report_sections": ["overview", "diagnostics", "treatment", "recommendations"]
-        }
+            "default_metrics": [
+                "diagnosis_accuracy",
+                "treatment_efficacy",
+                "patient_satisfaction",
+            ],
+            "visualization_templates": [
+                "patient_timeline",
+                "health_indicators",
+                "treatment_outcomes",
+            ],
+            "report_sections": [
+                "overview",
+                "diagnostics",
+                "treatment",
+                "recommendations",
+            ],
+        },
     }
 
     # Настройки безопасности

@@ -28,3 +28,6 @@ csa_gui_html/reports/
 csa_project-2/data/
 csa_project-2/results/
 csa_project-2/reports/
+venv/
+__pycache__/
+.DS_Store
